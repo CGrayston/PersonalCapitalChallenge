@@ -1,6 +1,7 @@
 package brandoncalabro.personalcapitalchallenge;
 
 
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -49,11 +50,6 @@ public class MainFragment extends Fragment {
         // declare the swipe refresh layout variable as global so we can start/stop the refreshing as needed
         swipeRefreshLayout = new SwipeRefreshLayout(getActivity());
         swipeRefreshLayout.setId(R.id.srl_fragment_main);
-        swipeRefreshLayout.setPadding(
-                (int) getActivity().getResources().getDimension(R.dimen.activity_horizontal_margin),  // left
-                (int) getActivity().getResources().getDimension(R.dimen.activity_vertical_margin),  // top
-                (int) getActivity().getResources().getDimension(R.dimen.activity_horizontal_margin),  // right
-                (int) getActivity().getResources().getDimension(R.dimen.activity_vertical_margin)); // bottom
         swipeRefreshLayout.setLayoutParams(new SwipeRefreshLayout.LayoutParams(SwipeRefreshLayout.LayoutParams.MATCH_PARENT,
                 SwipeRefreshLayout.LayoutParams.MATCH_PARENT));
         // add an on refresh listener to the swipe refresh layout!  without the on refresh listener
@@ -73,12 +69,14 @@ public class MainFragment extends Fragment {
         recyclerView.setId(R.id.rv_recycler_view);
         recyclerView.setVerticalScrollBarEnabled(false);
         recyclerView.setHorizontalScrollBarEnabled(false);
+        recyclerView.setHasFixedSize(false);
         recyclerView.setLayoutParams(new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT,
                 RecyclerView.LayoutParams.MATCH_PARENT));
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+
+        recyclerView.setLayoutManager(getGridLayoutManager());
+
         // set an empty adapter
-        recyclerView.setAdapter(new CustomRecyclerViewAdapter(getActivity(), new ArrayList<Feed>()));
+        recyclerView.setAdapter(new CustomRecyclerViewAdapter(getActivity(), new ArrayList<Feed>(), null));
         swipeRefreshLayout.addView(recyclerView);
 
         // finally return the swipe refresh layout as our view.  because SwipeRefreshLayout is a
@@ -148,16 +146,63 @@ public class MainFragment extends Fragment {
          * the grid layout to have 2 columns per row.  once the adapter is built and set then we can stop
          * the refresh animation.
          */
-        private void updateRecyclerView(List<Feed> feedList) {
-            // use this setting to improve performance if you know that changes
-            // in content do not change the layout size of the RecyclerView
-            recyclerView.setHasFixedSize(true);
-
-            // set the recycler view with grid layout, 2 columns per row
-            recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));// Stop refresh animation
+        private void updateRecyclerView(final List<Feed> feedList) {
+            recyclerView.setLayoutManager(getGridLayoutManager());
 
             // set the adapter
-            recyclerView.setAdapter(new CustomRecyclerViewAdapter(getActivity(), feedList));
+            recyclerView.setAdapter(new CustomRecyclerViewAdapter(
+                    getActivity(),
+                    feedList,
+                    new CustomRecyclerViewAdapter.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, int position) {
+                            // get the article url
+                            String article_url = feedList.get(position).getArticle_url();
+
+                            // TODO start webview for the given article url
+                            Log.d(LOG_TAG, article_url);
+                        }
+                    }));
         }
+    }
+
+    /**
+     * for phone views we want to have a grid view of 2 article per row but for tablet view we want
+     * to have a grid view of 3 articles per row.  in both cases the main header article will take up
+     * the entire column span
+     *
+     * @return the grid layout manager
+     */
+    private GridLayoutManager getGridLayoutManager() {
+        GridLayoutManager gridLayoutManager;
+        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+            gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    switch (position) {
+                        case 0:
+                            return 2;
+                        default:
+                            return 1;
+                    }
+                }
+            });
+        } else {
+            gridLayoutManager = new GridLayoutManager(getActivity(), 3);
+            gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    switch (position) {
+                        case 0:
+                            return 3;
+                        default:
+                            return 1;
+                    }
+                }
+            });
+        }
+
+        return gridLayoutManager;
     }
 }
