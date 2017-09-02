@@ -23,6 +23,8 @@ public class FeedParser {
     // don't use XML namespaces
     private static final String ns = null;
 
+    private String feedTitle;
+
     /**
      * Parse an Atom feed, returning a collection of Entry objects.
      *
@@ -89,7 +91,7 @@ public class FeedParser {
 
     /**
      * we have to read one more tag in depth which is the channel tag, due to this feed having two
-     * root tags where the item tags are stored.  we can loop through taht one here
+     * root tags where the item tags are stored.  we can loop through that one here
      *
      * @param parser Incoming XMl
      * @throws org.xmlpull.v1.XmlPullParserException on error parsing feed.
@@ -108,10 +110,23 @@ public class FeedParser {
 
             String name = parser.getName();
 
-            if (name.equals("item")) {
-                items.add(readItem(parser));
-            } else {
-                skip(parser);
+            switch (name) {
+                case "title":
+                    // we need to extract the main title which is located within the <channel> tag
+                    // just before the list of all the <item> tags
+                    String title = readTitle(parser);
+                    if (title != null) {
+                        setFeedTitle(title);
+                    } else {
+                        setFeedTitle("Personal Capital Challenge");
+                    }
+                    break;
+                case "item":
+                    items.add(readItem(parser));
+                    break;
+                default:
+                    skip(parser);
+                    break;
             }
         }
 
@@ -189,6 +204,15 @@ public class FeedParser {
     }
 
     /**
+     * parse the contents of the <channel> tag looking for the contents of title.
+     */
+    private String readTitle(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
+        parser.require(XmlPullParser.START_TAG, ns, "title");
+
+        return readTag(parser, TAG_TITLE);
+    }
+
+    /**
      * Reads the body of a basic XML tag, which is guaranteed not to contain any nested elements.
      * <p>
      * <p>You probably want to call readTag().
@@ -256,5 +280,13 @@ public class FeedParser {
                     break;
             }
         }
+    }
+
+    public String getFeedTitle() {
+        return feedTitle;
+    }
+
+    public void setFeedTitle(String feedTitle) {
+        this.feedTitle = feedTitle;
     }
 }

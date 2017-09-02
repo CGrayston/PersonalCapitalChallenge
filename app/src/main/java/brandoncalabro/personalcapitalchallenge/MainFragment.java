@@ -1,7 +1,6 @@
 package brandoncalabro.personalcapitalchallenge;
 
 
-import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,7 +8,11 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -46,12 +49,9 @@ public class MainFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // because the new web view fragment will hide the toolbar view in the main activity, we should
-        // check if it's gone, if so then we need to show it for this fragment
-        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        if (toolbar.getVisibility() == View.GONE) {
-            toolbar.setVisibility(View.VISIBLE);
-        }
+        // in order to access the menu from the fragment we must let the fragment know that
+        // there is in fact a menu to handle
+        setHasOptionsMenu(true);
 
         // just like in the main activity, we can create the layout for the fragment programmatically
         // the root view will be a swipe to refresh layout that will contain the recycler view.
@@ -95,6 +95,15 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // ensure that the refresh menu item is visible in this fragment
+        MenuItem menuItem = menu.findItem(R.id.menu_refresh);
+        menuItem.setVisible(true);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
@@ -119,7 +128,6 @@ public class MainFragment extends Fragment {
                 swipeRefreshLayout.setRefreshing(true);
             }
 
-            // initialize the feed parser class which will help us pull in the rss feed items
             feedParser = new FeedParser();
         }
 
@@ -159,6 +167,10 @@ public class MainFragment extends Fragment {
             // we should have an array of feed items or an empty array to load into the recycler view
             updateRecyclerView(feedList);
 
+            // finally set the title of the toolbar with the main feed title
+            Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+            toolbar.setTitle(CustomViewHelper.fromHtml(feedParser.getFeedTitle()));
+
             // finally we check if the animation is still running and if it is we should stop it here
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
@@ -181,12 +193,9 @@ public class MainFragment extends Fragment {
                     new CustomRecyclerViewAdapter.OnItemClickListener() {
                         @Override
                         public void onItemClick(View view, int position) {
-                            // get the article url
-                            String article_url = feedList.get(position).getArticle_url();
-
                             getActivity().getSupportFragmentManager()
                                     .beginTransaction()
-                                    .replace(R.id.fl_fragment_main, WebViewFragment.newInstance(article_url))
+                                    .replace(R.id.fl_fragment_main, WebViewFragment.newInstance(feedList.get(position)))
                                     .addToBackStack(LOG_TAG)
                                     .commit();
                         }
@@ -202,25 +211,21 @@ public class MainFragment extends Fragment {
      * @return the grid layout manager
      */
     private GridLayoutManager getGridLayoutManager() {
-        GridLayoutManager gridLayoutManager;
-
-        // the first task is to ensure that portrait and landscape orientation layouts are handled appropriately
+        // the first task is to ensure that phone and tablet layouts are handled appropriately
         // and the second task is to make the first, primary, feed item a unique view that will contain
         // slightly more data than the standard grid views that follow it
-        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                @Override
-                public int getSpanSize(int position) {
-                    switch (position) {
-                        case 0:
-                            return 2;
-                        default:
-                            return 1;
-                    }
-                }
-            });
-        } else {
+        GridLayoutManager gridLayoutManager;
+
+        // use the display metrics to determine if the device is a tablet or phone
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+        float yInches = displayMetrics.heightPixels / displayMetrics.ydpi;
+        float xInches = displayMetrics.widthPixels / displayMetrics.xdpi;
+        double diagonalInches = Math.sqrt(xInches * xInches + yInches * yInches);
+        if (diagonalInches >= 6.5) {
+            // 6.5inch device or bigger are my tablet definition
+            // these layouts will use a 3 column grid view
             gridLayoutManager = new GridLayoutManager(getActivity(), 3);
             gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
                 @Override
@@ -228,6 +233,21 @@ public class MainFragment extends Fragment {
                     switch (position) {
                         case 0:
                             return 3;
+                        default:
+                            return 1;
+                    }
+                }
+            });
+        } else {
+            // everything else is a phone display
+            // these layouts will use a 2 column grid view
+            gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+            gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    switch (position) {
+                        case 0:
+                            return 2;
                         default:
                             return 1;
                     }

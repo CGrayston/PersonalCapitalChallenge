@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -13,8 +16,10 @@ import android.widget.RelativeLayout;
 
 public class WebViewFragment extends Fragment {
     private static final String ARTICLE_URL = "ARTICLE_URL";
+    private static final String ARTICLE_TITLE = "ARTICLE_TITLE";
 
     private String articleUrl;
+    private String articleTitle;
 
     /**
      * All subclasses of Fragment must include a public empty constructor.
@@ -27,15 +32,17 @@ public class WebViewFragment extends Fragment {
     }
 
     /**
-     * create new instance of webview fragment that will receive the article url
+     * create new instance of webview fragment that will receive the feed item and pull two
+     * pieces of data from it, the article url and article title
      *
-     * @param articleUrl url of article to view in web view.
+     * @param feed the entire feed item
      * @return A new instance of fragment WebViewFragment.
      */
-    public static WebViewFragment newInstance(String articleUrl) {
+    public static WebViewFragment newInstance(Feed feed) {
         WebViewFragment fragment = new WebViewFragment();
         Bundle args = new Bundle();
-        args.putString(ARTICLE_URL, articleUrl);
+        args.putString(ARTICLE_TITLE, feed.getTitle());
+        args.putString(ARTICLE_URL, feed.getArticle_url());
         fragment.setArguments(args);
         return fragment;
     }
@@ -46,18 +53,23 @@ public class WebViewFragment extends Fragment {
 
         if (getArguments() != null) {
             articleUrl = getArguments().getString(ARTICLE_URL);
+            articleTitle = getArguments().getString(ARTICLE_TITLE);
+        } else {
+            articleUrl = "";
+            articleTitle = "";
         }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // the first thing we want to do is look for the toolbar layout that we built for the activity
-        // if it is visible we want to make it invisible so that we can get a fullscreen view for the webview
+        // in order to access the menu from the fragment we must let the fragment know that
+        // there is in fact a menu to handle
+        setHasOptionsMenu(true);
+
+        // set the title of the article to the toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        if (toolbar.getVisibility() == View.VISIBLE) {
-            toolbar.setVisibility(View.GONE);
-        }
+        toolbar.setTitle(articleTitle);
 
         // now we can build the webview to take up the entire fragment
         WebView webView = new WebView(getActivity());
@@ -86,5 +98,14 @@ public class WebViewFragment extends Fragment {
         }
 
         return webView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // we want to hide the menu item for refreshing while in this fragment
+        MenuItem menuItem = menu.findItem(R.id.menu_refresh);
+        menuItem.setVisible(false);
+
+        super.onCreateOptionsMenu(menu, inflater);
     }
 }

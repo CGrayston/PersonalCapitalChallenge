@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -210,6 +211,10 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
         TextView tv_title = new TextView(context);
         tv_title.setId(R.id.tv_title);
         tv_title.setTypeface(null, Typeface.BOLD);
+        tv_title.setLines(1);
+        tv_title.setEllipsize(TextUtils.TruncateAt.END);
+        tv_title.setMaxLines(1);
+
         tv_title.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
         tv_title.setPadding(
@@ -224,6 +229,9 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
         // add the link text view to the linear layout view
         TextView tv_description = new TextView(context);
         tv_description.setId(R.id.tv_description);
+        tv_description.setEllipsize(TextUtils.TruncateAt.END);
+        tv_description.setLines(2);
+        tv_description.setMaxLines(2);
         tv_description.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
         tv_description.setPadding(
@@ -275,7 +283,7 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
         ImageView iv_media_content = new ImageView(context);
         iv_media_content.setId(R.id.iv_media_content);
         iv_media_content.setContentDescription(context.getResources().getString(R.string.iv_content_description));
-        iv_media_content.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        iv_media_content.setScaleType(ImageView.ScaleType.FIT_XY);
         iv_media_content.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
         linearLayout.addView(iv_media_content);
@@ -284,6 +292,9 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
         TextView tv_title = new TextView(context);
         tv_title.setId(R.id.tv_title);
         tv_title.setTypeface(null, Typeface.BOLD);
+        tv_title.setLines(2);
+        tv_title.setEllipsize(TextUtils.TruncateAt.END);
+        tv_title.setMaxLines(2);
         tv_title.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
         tv_title.setPadding(
