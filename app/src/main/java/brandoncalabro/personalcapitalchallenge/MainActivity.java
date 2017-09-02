@@ -38,7 +38,8 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setLayoutParams(new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT,
                 Toolbar.LayoutParams.WRAP_CONTENT));
         toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary));
-        toolbar.setElevation(convertDp(4));
+        // i'm going to use a helper class to convert the dp into pixels
+        toolbar.setElevation(CustomViewHelper.convertDpToPixels(this, 4));
         toolbar.setTitle(getResources().getString(R.string.app_name));
         toolbar.setTitleTextColor(ContextCompat.getColor(this, android.R.color.white));
         linearLayout.addView(toolbar);
@@ -57,13 +58,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(coordinatorLayout, coordinatorLayoutParams);
     }
 
-    /**
-     * convert the dp int value to a float elevation of pixels
-     *
-     * @param dp int dp value to be converted
-     * @return returns the float elevation of pixels given the int dp
-     */
-    private float convertDp(int dp) {
-        return dp * getResources().getDisplayMetrics().density;
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // This is where the app initializes the code that maintains the UI.
+
+        // load the main fragment into the frame layout that was provided in the onCreate
+        getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_main, new MainFragment()).commit();
     }
 }

@@ -1,6 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item type="id" name="cl_activity_main" />
-    <item type="id" name="fl_fragment_main" />
-    <item type="id" name="toolbar" />
+    <!-- MainActivity IDs -->
+    <item name="cl_activity_main" type="id" />
+    <item name="fl_fragment_main" type="id" />
+    <item name="toolbar" type="id" />
+
+    <!-- MainFragment IDs -->
+    <item name="srl_fragment_main" type="id" />
+    <item name="rv_recycler_view" type="id" />
+
+    <!--CustomRecyclerViewAdapter ViewHolder IDs -->
+    <item name="tv_title" type="id" />
+    <item name="iv_media_content" type="id" />
+    <item name="tv_description" type="id" />
+    <item name="tv_pub_date" type="id" />
+    <item name="tv_link" type="id" />
 </resources>
