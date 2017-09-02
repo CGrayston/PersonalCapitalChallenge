@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="cl_activity_main" />
+    <item type="id" name="fl_fragment_main" />
+    <item type="id" name="toolbar" />
+</resources>
