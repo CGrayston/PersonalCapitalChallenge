@@ -31,7 +31,7 @@ public class FeedParser {
      * @throws java.io.IOException                   on I/O error.
      */
     @SuppressWarnings("WeakerAccess")
-    public List<Feed> parse(InputStream inputStream) throws XmlPullParserException, IOException, ParseException {
+    public synchronized List<Feed> parse(InputStream inputStream) throws XmlPullParserException, IOException, ParseException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -45,6 +45,22 @@ public class FeedParser {
 
     /**
      * Decode a feed attached to an XmlPullParser.
+     * Starts by looking for the <item> tag. This tag repeats inside of <rss> for each article in the feed.
+     * Example:
+     * <rss>
+     * -- <channel>
+     * -- -- <item>
+     * -- -- -- <title>
+     * -- -- -- <media:content url>
+     * -- -- -- <description>
+     * -- -- -- <pubDate>
+     * -- -- -- <link>
+     * -- -- </item>
+     * -- -- <item>
+     * -- -- -- ...
+     * -- -- </item>
+     * -- </channel>
+     * </rss>
      *
      * @param parser Incoming XMl
      * @throws org.xmlpull.v1.XmlPullParserException on error parsing feed.
@@ -72,7 +88,8 @@ public class FeedParser {
     }
 
     /**
-     * Decode a feed attached to an XmlPullParser.
+     * we have to read one more tag in depth which is the channel tag, due to this feed having two
+     * root tags where the item tags are stored.  we can loop through taht one here
      *
      * @param parser Incoming XMl
      * @throws org.xmlpull.v1.XmlPullParserException on error parsing feed.
@@ -90,23 +107,7 @@ public class FeedParser {
             }
 
             String name = parser.getName();
-            // Starts by looking for the <item> tag. This tag repeats inside of <rss> for each article in the feed.
-            //
-            // Example:
-            // <rss>
-            // -- <channel>
-            // -- -- <item>
-            // -- -- -- <title>
-            // -- -- -- <media:content url>
-            // -- -- -- <description>
-            // -- -- -- <pubDate>
-            // -- -- -- <link>
-            // -- -- </item>
-            // -- -- <item>
-            // -- -- -- ...
-            // -- -- </item>
-            // -- </channel>
-            // </rss>
+
             if (name.equals("item")) {
                 items.add(readItem(parser));
             } else {

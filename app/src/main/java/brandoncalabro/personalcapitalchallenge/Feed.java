@@ -9,6 +9,8 @@ public class Feed {
     private String article_url;
 
     /**
+     * a simple helper class to store the feed item data
+     *
      * @param title       each article has an html encoded title represented in the title node
      * @param image_url   an image is represented in the media:content node within the url attribute
      * @param description a quick html encoded summary of the article is represented in the description node

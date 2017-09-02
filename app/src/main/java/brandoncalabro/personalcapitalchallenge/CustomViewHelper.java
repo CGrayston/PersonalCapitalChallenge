@@ -1,8 +1,14 @@
 package brandoncalabro.personalcapitalchallenge;
 
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Spanned;
 
+/**
+ * this custom view helper class will help centralize specific methods relating to view customization
+ */
 @SuppressWarnings("WeakerAccess")
 public class CustomViewHelper {
     /**
@@ -20,5 +26,19 @@ public class CustomViewHelper {
             result = Html.fromHtml(html);
         }
         return result;
+    }
+
+    /**
+     * this method will allow us to see the android selected or touch animation by setting
+     * the item background correctly
+     *
+     * @return drawable of the selected item background animation
+     */
+    public static Drawable getSelectedItemBackground(Context context) {
+        int[] attrs = new int[]{R.attr.selectableItemBackground};
+        TypedArray ta = context.obtainStyledAttributes(attrs);
+        Drawable selectedItemDrawable = ta.getDrawable(0);
+        ta.recycle();
+        return selectedItemDrawable;
     }
 }

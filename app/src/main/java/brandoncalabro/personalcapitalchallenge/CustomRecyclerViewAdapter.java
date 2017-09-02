@@ -1,11 +1,9 @@
 package brandoncalabro.personalcapitalchallenge;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -22,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
@@ -37,10 +36,32 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
 
     private OnItemClickListener onItemClickListener;
 
+    /**
+     * this is my interface for the on click listener so that when the user touches a view
+     * or card they will be able to transition to the webview.
+     */
     public interface OnItemClickListener {
         void onItemClick(View view, int position);
     }
 
+    /**
+     * this empty constructor is used to create an empty recycler view adapter
+     */
+    CustomRecyclerViewAdapter() {
+        this.context = null;
+        this.feedList = new ArrayList<>();
+
+        this.onItemClickListener = null;
+    }
+
+    /**
+     * the main recycler view adapter constructor will take in several parameters to build the dynamic
+     * recycler view with all the data from the rss feed list
+     *
+     * @param context             activity context
+     * @param feedList            list of feed items from the rss feed
+     * @param onItemClickListener onclick listener to handle webview transitions
+     */
     CustomRecyclerViewAdapter(Context context, List<Feed> feedList, OnItemClickListener onItemClickListener) {
         this.context = context;
         this.feedList = feedList;
@@ -50,9 +71,8 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public int getItemViewType(int position) {
-        // if the position is the first card then we'll return the extended view type
+        // if the position is the first card then we'll return the primary extended view type
         // otherwise return the standard reduced view type
-
         if (position == 0) {
             return VIEW_TYPE_PRIMARY;
         } else {
@@ -62,6 +82,7 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        // depending on the view type we wll return the appropriate view holder
         switch (viewType) {
             case VIEW_TYPE_PRIMARY:
                 return new PrimaryViewHolder(getPrimaryView());
@@ -74,11 +95,14 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+        // first get the data from the feed list at the item position
         Feed feed = feedList.get(position);
 
+        // initialize the view holders
         PrimaryViewHolder primaryViewHolder;
         StandardViewHolder standardViewHolder;
 
+        // after determining which view holder we are going to use we can bind the data appropriately
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_PRIMARY:
                 primaryViewHolder = (PrimaryViewHolder) holder;
@@ -141,14 +165,14 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
     }
 
     /**
-     * get the primary or main focus view
+     * get the primary view holder for the card view
      *
      * @return card view of the initial main view for the recycler view
      */
     private CardView getPrimaryView() {
         // create the root view a a card view to host the entire view holder
         CardView cardView = new CardView(context);
-        cardView.setForeground(getSelectedItemBackground());
+        cardView.setForeground(CustomViewHelper.getSelectedItemBackground(context));
         cardView.setClickable(true);
         cardView.setElevation(context.getResources().getDimension(R.dimen.card_view_elevation));
         cardView.setRadius(context.getResources().getDimension(R.dimen.card_view_corner_radius));
@@ -222,7 +246,7 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
     private CardView getStandardView() {
         // create the root view a a card view to host the entire view holder
         CardView cardView = new CardView(context);
-        cardView.setForeground(getSelectedItemBackground());
+        cardView.setForeground(CustomViewHelper.getSelectedItemBackground(context));
         cardView.setClickable(true);
         cardView.setElevation(context.getResources().getDimension(R.dimen.card_view_elevation));
         cardView.setRadius(context.getResources().getDimension(R.dimen.card_view_corner_radius));
@@ -305,20 +329,6 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
     }
 
     /**
-     * this method will allow us to see the android selected or touch animation by setting
-     * the item background correctly
-     *
-     * @return drawable of the selected item background animation
-     */
-    public Drawable getSelectedItemBackground() {
-        int[] attrs = new int[]{R.attr.selectableItemBackground};
-        TypedArray ta = context.obtainStyledAttributes(attrs);
-        Drawable selectedItemDrawable = ta.getDrawable(0);
-        ta.recycle();
-        return selectedItemDrawable;
-    }
-
-    /**
      * using the asynctask we can download the image contents in the background and then set them
      * to the image view as they are loaded in
      */
@@ -326,21 +336,52 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
         private ImageView imageView;
         private String url;
 
-        public MediaContentLoader(ImageView imageView, String url) {
+        MediaContentLoader(ImageView imageView, String url) {
             this.imageView = imageView;
             this.url = url;
         }
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // we should initialize every image view to the default image asset for an image placeholder
+            imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_image_placeholder, context.getTheme()));
+        }
+
+        @Override
         protected Bitmap doInBackground(Void... voids) {
-            return getImageBitmap(url);
+            // we are going to attempt to access the internet so we need to again check if we have a connection
+            // available so that we don't throw an IO exception
+            if (Connectivity.isConnectedWifi(context) || Connectivity.isConnectedMobile(context)) {
+                // finally we have a connection so we can attempt to load and parse the feed data
+                return getImageBitmap(url);
+            } else if (!Connectivity.isConnectedWifi(context)) {
+                return null;
+            } else if (!Connectivity.isConnectedMobile(context)) {
+                return null;
+            } else {
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
-            imageView.setImageBitmap(bitmap);
+            // finally we have a bitmap and we can set the image view
+            // if the bitmap is null, however, we should let the user know that something
+            // went wrong, perhaps with a broken image asset in the image view
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+            } else {
+                imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_broken_image, context.getTheme()));
+            }
         }
 
+        /**
+         * we can pull the image from the url provided and load it into a bitmap
+         *
+         * @param url url of the image to be loaded
+         * @return the bitmap representation of the image
+         */
         private Bitmap getImageBitmap(String url) {
             Bitmap bm = null;
             try {

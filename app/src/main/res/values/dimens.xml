@@ -9,8 +9,8 @@
     <dimen name="card_view_max_height">240dp</dimen>
     <dimen name="card_view_image_max_height">120dp</dimen>
     <dimen name="card_view_padding">0dp</dimen>
-    <dimen name="card_view_margin">4dp</dimen>
-    <dimen name="card_view_elevation">4dp</dimen>
+    <dimen name="card_view_margin">8dp</dimen>
+    <dimen name="card_view_elevation">2dp</dimen>
     <dimen name="card_view_corner_radius">0dp</dimen>
-    <dimen name="view_padding">4dp</dimen>
+    <dimen name="view_padding">8dp</dimen>
 </resources>

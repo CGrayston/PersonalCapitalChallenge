@@ -9,10 +9,10 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -47,27 +47,26 @@ public class MainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // because the new web view fragment will hide the toolbar view in the main activity, we should
-        // show it again when we return to this view if it is gone
+        // check if it's gone, if so then we need to show it for this fragment
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        if(toolbar.getVisibility() == View.GONE) {
+        if (toolbar.getVisibility() == View.GONE) {
             toolbar.setVisibility(View.VISIBLE);
         }
 
-        // just like in the main activity, here i'll create the layout for the fragment pragmatically
+        // just like in the main activity, we can create the layout for the fragment programmatically
         // the root view will be a swipe to refresh layout that will contain the recycler view.
-        // declare the swipe refresh layout variable as global so we can start/stop the refreshing as needed
+        // we can declare the swipe refresh layout variable as global so we can start/stop the
+        // refreshing animation as needed
         swipeRefreshLayout = new SwipeRefreshLayout(getActivity());
         swipeRefreshLayout.setId(R.id.srl_fragment_main);
         swipeRefreshLayout.setLayoutParams(new SwipeRefreshLayout.LayoutParams(SwipeRefreshLayout.LayoutParams.MATCH_PARENT,
                 SwipeRefreshLayout.LayoutParams.MATCH_PARENT));
-        // add an on refresh listener to the swipe refresh layout!  without the on refresh listener
-        // the app will crash with a null pointer exception.  ensure to stop the refresh animation as well.
+        // add an onRefreshListener to the swipe refresh layout!  without the onRefreshListener
+        // the app will crash with a null pointer exception
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Log.d(LOG_TAG, "loading rss feed...");
-
-                // update the recycler view adapter with the data from the rss feed
+                // this asynctask call will allow us to reload the data from the rss feed
                 new RssLoader().execute();
             }
         });
@@ -81,10 +80,13 @@ public class MainFragment extends Fragment {
         recyclerView.setLayoutParams(new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT,
                 RecyclerView.LayoutParams.MATCH_PARENT));
 
+        // due to the requirement for the main (initial) rss item to be extended we need to customize
+        // the grid layout manager, we an also handle orientation changes with this customization
         recyclerView.setLayoutManager(getGridLayoutManager());
 
-        // set an empty adapter
-        recyclerView.setAdapter(new CustomRecyclerViewAdapter(getActivity(), new ArrayList<Feed>(), null));
+        // no data is available right at this moment so we will call the empty constructor for the
+        // adapter simply to initialize it
+        recyclerView.setAdapter(new CustomRecyclerViewAdapter());
         swipeRefreshLayout.addView(recyclerView);
 
         // finally return the swipe refresh layout as our view.  because SwipeRefreshLayout is a
@@ -93,15 +95,11 @@ public class MainFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
-        // update the recycler view adapter
+        // in order to handle orientation changes properly we need to have this async task within the
+        // onResume override method so that we don't lose our activity context
         new RssLoader().execute();
     }
 
@@ -115,34 +113,53 @@ public class MainFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            // before we begin loading data we need to check if the animation is running, if not
+            // then we should start it so that the user knows that data will begin loading
             if (!swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(true);
             }
 
+            // initialize the feed parser class which will help us pull in the rss feed items
             feedParser = new FeedParser();
         }
 
         @Override
         protected List<Feed> doInBackground(Void... voids) {
-            String rssUrl = "https://blog.personalcapital.com/feed/?cat=3,891,890,68,284";
+            // first we will get the rss feed url from the resources
+            String rssUrl = getActivity().getResources().getString(R.string.rss_feed_url);
 
-            try {
-                InputStream inputStream = new URL(rssUrl).openStream();
-                return feedParser.parse(inputStream);
-            } catch (IOException | XmlPullParserException | ParseException e) {
-                e.printStackTrace();
+            // now we are going to first check for an active internet connection, if we can't find one
+            // then we can't access any content over the internet so we should let the user know
+            if (Connectivity.isConnectedWifi(getActivity()) || Connectivity.isConnectedMobile(getActivity())) {
+                // finally we have a connection so we can attempt to load and parse the feed data
+                try {
+                    InputStream inputStream = new URL(rssUrl).openStream();
+                    return feedParser.parse(inputStream);
+                } catch (IOException | XmlPullParserException | ParseException e) {
+                    e.printStackTrace();
+
+                    return new ArrayList<>();
+                }
+            } else if (!Connectivity.isConnectedWifi(getActivity())) {
+                Toast.makeText(getActivity(), "No Wifi connection detected", Toast.LENGTH_SHORT).show();
+                return new ArrayList<>();
+            } else if (!Connectivity.isConnectedMobile(getActivity())) {
+                Toast.makeText(getActivity(), "No Mobile connection detected", Toast.LENGTH_SHORT).show();
+                return new ArrayList<>();
+            } else {
+                Toast.makeText(getActivity(), "No Internet connection detected", Toast.LENGTH_SHORT).show();
+                return new ArrayList<>();
             }
-
-            return new ArrayList<>();
         }
 
         @Override
         protected void onPostExecute(List<Feed> feedList) {
             super.onPostExecute(feedList);
 
+            // we should have an array of feed items or an empty array to load into the recycler view
             updateRecyclerView(feedList);
 
-            // if the animation is still refreshing then we should end it now
+            // finally we check if the animation is still running and if it is we should stop it here
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
             }
@@ -167,8 +184,6 @@ public class MainFragment extends Fragment {
                             // get the article url
                             String article_url = feedList.get(position).getArticle_url();
 
-                            Log.d(LOG_TAG, article_url);
-
                             getActivity().getSupportFragmentManager()
                                     .beginTransaction()
                                     .replace(R.id.fl_fragment_main, WebViewFragment.newInstance(article_url))
@@ -188,6 +203,10 @@ public class MainFragment extends Fragment {
      */
     private GridLayoutManager getGridLayoutManager() {
         GridLayoutManager gridLayoutManager;
+
+        // the first task is to ensure that portrait and landscape orientation layouts are handled appropriately
+        // and the second task is to make the first, primary, feed item a unique view that will contain
+        // slightly more data than the standard grid views that follow it
         if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             gridLayoutManager = new GridLayoutManager(getActivity(), 2);
             gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -217,5 +236,13 @@ public class MainFragment extends Fragment {
         }
 
         return gridLayoutManager;
+    }
+
+    /**
+     * this public method will allow the activity to call it so that the activity refresh action
+     * can start the refresh process of downloading the new data
+     */
+    public void refreshContent() {
+        new RssLoader().execute();
     }
 }

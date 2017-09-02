@@ -16,8 +16,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // load the layout programmatically
-
         // the root layout will be the coordinator layout
         CoordinatorLayout coordinatorLayout = new CoordinatorLayout(this);
         coordinatorLayout.setId(R.id.cl_activity_main);
@@ -41,14 +39,13 @@ public class MainActivity extends AppCompatActivity {
                 Toolbar.LayoutParams.WRAP_CONTENT));
         toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary));
         toolbar.setDrawingCacheBackgroundColor(ContextCompat.getColor(this, android.R.color.white));
-        // i'm going to use a helper class to convert the dp into pixels
         toolbar.setElevation(getResources().getDimension(R.dimen.toolbar_elevation));
         toolbar.setTitle(getResources().getString(R.string.app_name));
         toolbar.setTitleTextColor(ContextCompat.getColor(this, android.R.color.white));
         toolbar.setPopupTheme(R.style.PopupOverlay);
         linearLayout.addView(toolbar);
 
-        // then add in the frame layout as the second view
+        // then add in the frame layout as the second view.  this frame layout will hold our fragment view
         FrameLayout frameLayout = new FrameLayout(this);
         frameLayout.setId(R.id.fl_fragment_main);
         frameLayout.setBackgroundColor(ContextCompat.getColor(this, android.R.color.white));
@@ -62,40 +59,51 @@ public class MainActivity extends AppCompatActivity {
         // and then set the root view with the layout params as the main content view
         setContentView(coordinatorLayout, coordinatorLayoutParams);
 
-        // we need to override the action bar to use the support toolbar provided above
+        // because we manually hid the default actionbar in the theme style we need to manually tell
+        // the activity that the toolbar above will be our new action bar replacement
         setSupportActionBar(toolbar);
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // This is where the app initializes the code that maintains the UI.
-
-        // load the main fragment into the frame layout that was provided in the onCreate
-        getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_main, new MainFragment()).commit();
+        // we should check for for a saved instance state so that when the orientation changes we
+        // don't reinitialize the fragment and lose our state
+        if (savedInstanceState == null) {
+            // load the main fragment into the frame layout that was provided
+            // we only need to do this for our initial view
+            getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_main, new MainFragment()).commit();
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // build the menu programmatically
+        // create the menu item for the refresh action and attach an icon  to it
         menu.add(Menu.NONE, R.id.menu_refresh, Menu.NONE, R.string.menu_action_refresh)
                 .setIcon(R.drawable.ic_action_refresh)
-                .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);;
+                .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
         switch (item.getItemId()) {
             case R.id.menu_refresh:
-                // TODO: provide a more elegant solution to toggle the refresh action within the fragment
-                // refreshing will reload the fragment and begin the content loading
-                getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_main, new MainFragment()).commit();
+                // the user has selected to refresh the data on screen so we can access the fragment
+                // using this method which will begin the rss loader async task
+                refreshContent();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * access the fragment that contains the feed and attempt to refresh it
+     */
+    private void refreshContent() {
+        MainFragment mainFragment = (MainFragment) getSupportFragmentManager().findFragmentById(R.id.fl_fragment_main);
+
+        // if the fragment we are requesting is attached then we can refresh the data
+        if (mainFragment != null) {
+            mainFragment.refreshContent();
         }
     }
 }

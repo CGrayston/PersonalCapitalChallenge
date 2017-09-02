@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Personal Capital Challenge</string>
 
+    <string name="rss_feed_url">https://blog.personalcapital.com/feed/?cat=3,891,890,68,284</string>
+
+    <string name="web_view_display_mode">displayMobileNavigation=0</string>
+
     <!-- CustomRecyclerViewAdapter CustomViewHolder -->
     <string name="iv_content_description">Image View Content Description</string>
 

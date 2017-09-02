@@ -1,6 +1,7 @@
 package brandoncalabro.personalcapitalchallenge;
 
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
@@ -48,12 +49,13 @@ public class WebViewFragment extends Fragment {
         }
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // the first thing we want to do is look for the toolbar layout that we built for the activity
         // if it is visible we want to make it invisible so that we can get a fullscreen view for the webview
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        if(toolbar.getVisibility() == View.VISIBLE) {
+        if (toolbar.getVisibility() == View.VISIBLE) {
             toolbar.setVisibility(View.GONE);
         }
 
@@ -67,18 +69,22 @@ public class WebViewFragment extends Fragment {
                 (int) getActivity().getResources().getDimension(R.dimen.activity_vertical_margin));
         webView.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
-        // load the webview settings
-        //webView.getSettings().setJavaScriptEnabled(true);
+        // load the webview settings and set javascript enabled to true so the user experience on the
+        // web view will be interactive and enjoyable
+        webView.getSettings().setJavaScriptEnabled(true);
 
-        String displayMode = "?displayMobileNavigation=0";
-        // append other params with '&' character
+        // we need to pass the display mode parameter as a requirement to viewing the article url
+        String displayMode = getActivity().getResources().getString(R.string.web_view_display_mode);
 
         // create the modified web view url with the parameters and the article url
-        String webViewUrl = articleUrl + displayMode;
+        if (articleUrl != null) {
+            String webViewUrl = articleUrl + "?" + displayMode;
+            // append other params with '&' character
 
-        webView.loadUrl(webViewUrl);
+            // attach the url to the webview so that when we start the fragment the view will display
+            webView.loadUrl(webViewUrl);
+        }
 
         return webView;
     }
-
 }
