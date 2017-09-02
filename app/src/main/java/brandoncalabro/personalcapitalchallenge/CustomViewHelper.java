@@ -6,6 +6,11 @@ import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Spanned;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * this custom view helper class will help centralize specific methods relating to view customization
  */
@@ -40,5 +45,30 @@ public class CustomViewHelper {
         Drawable selectedItemDrawable = ta.getDrawable(0);
         ta.recycle();
         return selectedItemDrawable;
+    }
+
+    /**
+     * In order to display the date time as requested i've had to properly format it according to the
+     * input given.  once formatted I can output the suggested format
+     * http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
+     *
+     * @param dateString unformatted date string
+     * @return returns properly formatted date string
+     */
+    public static String formatDateTime(String dateString) {
+        // Fri, 01 Sep 2017 22:00:30 +0000 --> EEE, dd MMM yyyy HH:mm:ss Z
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
+        Date date;
+        try {
+            date = simpleDateFormat.parse(dateString);
+
+            // September 01, 2017 --> MMMM dd, yyyy
+            simpleDateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.US);
+            dateString = simpleDateFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return dateString;
     }
 }

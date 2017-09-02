@@ -110,7 +110,7 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
 
                 primaryViewHolder.tv_title.setText(CustomViewHelper.fromHtml(feed.getTitle()));
 
-                String fullDescription = formatDateTime(feed.getPub_date())
+                String fullDescription = CustomViewHelper.formatDateTime(feed.getPub_date())
                         + CustomViewHelper.fromHtml("&mdash;")
                         + CustomViewHelper.fromHtml(feed.getDescription());
 
@@ -307,36 +307,6 @@ public class CustomRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
         cardView.addView(linearLayout);
 
         return cardView;
-    }
-
-    /**
-     * TODO - set up the date time formatter
-     * we are given the date time but not in a very readable format so we can parse it here to the
-     * proper readable format.  for now these are all in the US locale time
-     *
-     * @param strDateTime unreadable format of date time
-     * @return returns the readable format of date time as a string
-     */
-    private String formatDateTime(String strDateTime) {
-        /*
-        Time t = new Time();
-        t.parse3339(strDateTime);
-        long dateTime = t.toMillis(false);
-
-        Date date = new Date(dateTime);
-        Date parsedDateTime;
-        try {
-            SimpleDateFormat format = new SimpleDateFormat("MMMMM dd, yyyy", Locale.US);
-            parsedDateTime = format.parse(date.toString());
-        } catch (ParseException e) {
-            e.printStackTrace();
-
-            return strDateTime;
-        }
-
-        return parsedDateTime.toString();
-        */
-        return strDateTime;
     }
 
     /**

@@ -33,3 +33,8 @@
 - Do not use XML Layouts
     * I did not any xml layout while completing this challenge, that is to say that I did not use any resources within /res/layouts/*
     * I did, however, use resources from the /res/values/*, /res/drawable/*, and /res/mipmap/* which included xml resources.
+- No third party libraries were used.
+
+###### Testing
+- Added a simple unit test for the date formatting method within the CustomViewHelper.java class.
+    * I initially was having issue with the formatting, but resolved the issue quickly enough
