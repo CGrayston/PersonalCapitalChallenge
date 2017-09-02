@@ -14,11 +14,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // disable the layout loading by the xml resource file
-        //setContentView(R.layout.activity_main);
-
         // load the layout programmatically
+
         // the root layout will be the coordinator layout
         CoordinatorLayout coordinatorLayout = new CoordinatorLayout(this);
         coordinatorLayout.setId(R.id.cl_activity_main);
@@ -38,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
         // within linear layout add in the toolbar layout as the first view
         Toolbar toolbar = new Toolbar(this);
         toolbar.setId(R.id.toolbar);
-        toolbar.setLayoutParams(new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.WRAP_CONTENT));
+        toolbar.setLayoutParams(new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT,
+                Toolbar.LayoutParams.WRAP_CONTENT));
         toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary));
         toolbar.setElevation(convertDp(4));
         toolbar.setTitle(getResources().getString(R.string.app_name));
