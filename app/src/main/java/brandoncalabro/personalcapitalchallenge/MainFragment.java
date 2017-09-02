@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,14 +29,14 @@ public class MainFragment extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
 
+    /**
+     * All subclasses of Fragment must include a public empty constructor.
+     * The framework will often re-instantiate a fragment class when needed, in particular
+     * during state restore, and needs to be able to find this constructor to instantiate it.
+     * If the empty constructor is not available, a runtime exception will occur in some cases
+     * during state restore.
+     */
     public MainFragment() {
-        /*
-        All subclasses of Fragment must include a public empty constructor.
-        The framework will often re-instantiate a fragment class when needed, in particular
-        during state restore, and needs to be able to find this constructor to instantiate it.
-        If the empty constructor is not available, a runtime exception will occur in some cases
-        during state restore.
-         */
     }
 
     @Override
@@ -45,6 +46,13 @@ public class MainFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // because the new web view fragment will hide the toolbar view in the main activity, we should
+        // show it again when we return to this view if it is gone
+        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+        if(toolbar.getVisibility() == View.GONE) {
+            toolbar.setVisibility(View.VISIBLE);
+        }
+
         // just like in the main activity, here i'll create the layout for the fragment pragmatically
         // the root view will be a swipe to refresh layout that will contain the recycler view.
         // declare the swipe refresh layout variable as global so we can start/stop the refreshing as needed
@@ -159,8 +167,13 @@ public class MainFragment extends Fragment {
                             // get the article url
                             String article_url = feedList.get(position).getArticle_url();
 
-                            // TODO start webview for the given article url
                             Log.d(LOG_TAG, article_url);
+
+                            getActivity().getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.fl_fragment_main, WebViewFragment.newInstance(article_url))
+                                    .addToBackStack(LOG_TAG)
+                                    .commit();
                         }
                     }));
         }

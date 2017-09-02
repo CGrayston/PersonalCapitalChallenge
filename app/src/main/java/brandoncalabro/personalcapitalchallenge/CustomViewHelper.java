@@ -1,22 +1,10 @@
 package brandoncalabro.personalcapitalchallenge;
 
-import android.content.Context;
 import android.text.Html;
 import android.text.Spanned;
 
 @SuppressWarnings("WeakerAccess")
 public class CustomViewHelper {
-    /**
-     * convert the dp int value to a float elevation of pixels
-     *
-     * @param dp int dp value to be converted
-     * @return returns the float elevation of pixels given the int dp
-     */
-    @SuppressWarnings("WeakerAccess")
-    public static float convertDpToPixels(Context context, int dp) {
-        return dp * context.getResources().getDisplayMetrics().density;
-    }
-
     /**
      * format the html text from the xml input
      *

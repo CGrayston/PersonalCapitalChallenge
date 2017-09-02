@@ -2,6 +2,9 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <!-- Toolbar View -->
+    <dimen name="toolbar_elevation">4dp</dimen>
+
     <!-- Card Views -->
     <dimen name="card_view_max_height">240dp</dimen>
     <dimen name="card_view_image_max_height">120dp</dimen>

@@ -3,4 +3,7 @@
 
     <!-- CustomRecyclerViewAdapter CustomViewHolder -->
     <string name="iv_content_description">Image View Content Description</string>
+
+    <!-- MainActivity Menu -->
+    <string name="menu_action_refresh">Refresh</string>
 </resources>

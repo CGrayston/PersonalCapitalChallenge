@@ -4,9 +4,15 @@
     <item name="fl_fragment_main" type="id" />
     <item name="toolbar" type="id" />
 
+    <!-- MainActivity Menu IDs -->
+    <item name="menu_refresh" type="id" />
+
     <!-- MainFragment IDs -->
     <item name="srl_fragment_main" type="id" />
     <item name="rv_recycler_view" type="id" />
+
+    <!-- WebViewFragment IDs -->
+    <item name="wv_web_view" type="id" />
 
     <!--CustomRecyclerViewAdapter ViewHolder IDs -->
     <item name="tv_title" type="id" />
