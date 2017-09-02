@@ -28,6 +28,8 @@
 - I initially allowed the WebViewFragment to load without the toolbar displaying.
     * I thought that with the content already displaying within the view there is no reason to load the title in the toolbar again.
     * Then when the user returned to the MainFragment we would re-display the toolbar.
+- I could have also improved the experience by caching the data.
+    * The user currently will read the RSS feed in full and this takes some time to do.  I could have cached the images and data the first time it's loaded and then the load would only have happened if any data had been added.
 
 ###### Android Requirements
 - Do not use XML Layouts
